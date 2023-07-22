@@ -47,5 +47,6 @@ class LocalNoticeService {
 
   Future<void> cancelNotification(int id) async {
     await _localNotificationsPlugin.cancel(id);
+    print("cancel");
   }
 }

@@ -1,15 +1,19 @@
 //import 'package:Optigram/helpers/dom_modifier.helper.dart';
+// ignore_for_file: constant_identifier_names
+
 import 'package:optigram/views/widget/timerOpeningInsta.view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 //import 'package:html/dom.dart' as Dom;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:optigram/services/local_notice.service.dart';
+import 'package:optigram/services/app_lifecycle.service_observer.dart';
 
 const String HOME_URL = 'https://www.instagram.com/';
 const String STARTING_URL = 'https://www.instagram.com/direct/inbox/';
 const int OPENING_INSTA_TIME = 5;
 const int WINDOW_TO_OPEN_INSTA = 60;
+const int NOTIFICATION_ID = 111;
 
 class InstaPage extends StatefulWidget {
   const InstaPage({super.key});
@@ -27,16 +31,17 @@ class _InstaPage extends State<InstaPage> {
     allowsInlineMediaPlayback: true,
     iframeAllow: "camera; microphone",
     iframeAllowFullscreen: true,
-    disableVerticalScroll: false,
     disallowOverScroll: true,
   );
 
   InAppWebViewController? _webViewController;
 
   final LocalNoticeService _localNoticeService = LocalNoticeService();
+  late final AppLifecycleObserver _appLifecycleObserver = AppLifecycleObserver(onResume: _onResume);
 
   bool _isOpening = false;
-  late bool _onHomePage = false;
+  bool _onHomePage = false;
+  bool _canOpenInsta = false;
 
   void _onUrlChange(InAppWebViewController controller, WebUri? url, bool? isReload) {
     setState(() {
@@ -55,29 +60,40 @@ class _InstaPage extends State<InstaPage> {
     setState(() {
       _isOpening = true;
     });
-    print("add notification");
 
     _localNoticeService.addNotification(
       'Instagram ready',
-      'Instagram is ready to be opened',
+      'Open Instagram now',
       DateTime.now().millisecondsSinceEpoch + OPENING_INSTA_TIME * 1000,
-      channel: 'testing',
-      id: 111,
+      channel: 'Opening Instagram alert',
+      id: NOTIFICATION_ID,
     );
-
-    //Future.delayed(const Duration(seconds: WINDOW_TO_OPEN_INSTA), () => _localNoticeService.cancelNotification(111));
   }
 
   void _cancelOpening() {
     setState(() {
       _isOpening = false;
     });
+
+    _localNoticeService.cancelNotification(NOTIFICATION_ID);
   }
 
   void _openingFinished() {
     setState(() {
       _isOpening = false;
+      _canOpenInsta = true;
     });
+
+    if (_appLifecycleObserver.userOnApp) {
+      _openInstagramApp();
+      _localNoticeService.cancelNotification(NOTIFICATION_ID);
+    }
+  }
+
+  void _onResume() {
+    if (_canOpenInsta) {
+      _openInstagramApp();
+    }
   }
 
   void _openInstagramApp() async {
@@ -87,6 +103,7 @@ class _InstaPage extends State<InstaPage> {
     } else {
       throw 'Could not launch $url';
     }
+    _canOpenInsta = false;
   }
 
   /* void _onPageLoaded(InAppWebViewController controller, int progress) {
@@ -110,6 +127,7 @@ class _InstaPage extends State<InstaPage> {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addObserver(_appLifecycleObserver);
     return WillPopScope(
         child: Scaffold(
             backgroundColor: Colors.grey[900],
@@ -144,5 +162,11 @@ class _InstaPage extends State<InstaPage> {
           }
           return true;
         });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(_appLifecycleObserver);
+    super.dispose();
   }
 }
