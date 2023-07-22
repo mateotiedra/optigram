@@ -4,21 +4,25 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:optigram/controllers/timer.notifier.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 //import 'package:html/dom.dart' as Dom;
 
-import 'package:optigram/views/widget/timerOpeningInsta.view.dart';
+import 'package:optigram/views/widget/timer_opening_insta.view.dart';
 import 'package:optigram/services/local_notice.service.dart';
 import 'package:optigram/services/app_lifecycle.service_observer.dart';
 
 const String HOME_URL = 'https://www.instagram.com/';
 const String STARTING_URL = 'https://www.instagram.com/direct/inbox/';
-const int OPENING_INSTA_TIME = 180;
+const int OPENING_INSTA_TIME = 5;
 const int WINDOW_TO_OPEN_INSTA = 60;
 const int NOTIFICATION_ID = 111;
 
 class InstaPage extends StatefulWidget {
-  const InstaPage({super.key});
+  final AppLifecycleObserver appLifecycleObserver;
+
+  const InstaPage(this.appLifecycleObserver, {super.key});
 
   @override
   State<InstaPage> createState() => _InstaPage();
@@ -39,11 +43,10 @@ class _InstaPage extends State<InstaPage> {
   InAppWebViewController? _webViewController;
 
   final LocalNoticeService _localNoticeService = LocalNoticeService();
-  late final AppLifecycleObserver _appLifecycleObserver = AppLifecycleObserver(onResume: _onResume);
+  late final AppLifecycleObserver _appLifecycleObserver = widget.appLifecycleObserver;
 
   Timer _timerWindowToOpen = Timer(Duration.zero, () {});
 
-  bool _isOpening = false;
   bool _onHomePage = false;
   bool _canOpenInsta = false;
 
@@ -54,6 +57,9 @@ class _InstaPage extends State<InstaPage> {
 
       if (_onHomePage) {
         controller.evaluateJavascript(source: "document.body.style.overflow = 'hidden';");
+        if (_canOpenInsta) {
+          _openInstagramApp();
+        }
       } else {
         controller.evaluateJavascript(source: "document.body.style.overflow = 'auto';");
       }
@@ -61,9 +67,7 @@ class _InstaPage extends State<InstaPage> {
   }
 
   void _startOpening() {
-    setState(() {
-      _isOpening = true;
-    });
+    Provider.of<TimerNotifier>(context, listen: false).startTimer(OPENING_INSTA_TIME, onFinish: _openingFinished);
 
     _localNoticeService.addNotification(
       'Instagram ready',
@@ -75,20 +79,17 @@ class _InstaPage extends State<InstaPage> {
   }
 
   void _cancelOpening() {
-    setState(() {
-      _isOpening = false;
-    });
+    Provider.of<TimerNotifier>(context, listen: false).cancelTimer();
 
     _localNoticeService.cancelNotification(NOTIFICATION_ID);
   }
 
   void _openingFinished() {
     setState(() {
-      _isOpening = false;
       _canOpenInsta = true;
     });
 
-    if (_appLifecycleObserver.userOnApp) {
+    if (_appLifecycleObserver.userOnApp && _onHomePage) {
       _openInstagramApp();
       _localNoticeService.cancelNotification(NOTIFICATION_ID);
     } else {
@@ -133,6 +134,7 @@ class _InstaPage extends State<InstaPage> {
 
   @override
   void initState() {
+    _appLifecycleObserver.onResume = _onResume;
     super.initState();
   }
 
@@ -152,19 +154,20 @@ class _InstaPage extends State<InstaPage> {
                     onWebViewCreated: (controller) => _webViewController = controller,
                     onUpdateVisitedHistory: _onUrlChange,
                   )),
-              _onHomePage
-                  ? Container(
+              Visibility(
+                  visible: _onHomePage,
+                  child: Container(
                       decoration: const BoxDecoration(
                         color: Colors.black,
                       ),
                       margin: EdgeInsets.only(
                           top: MediaQuery.of(context).padding.top + 150, bottom: MediaQuery.of(context).padding.bottom + 50),
                       child: Center(
-                        child: _isOpening
-                            ? TimerOpeningInsta(durationInSeconds: OPENING_INSTA_TIME, onFinish: _openingFinished, onCancel: _cancelOpening)
+                        child: context.watch<TimerNotifier>().isTimerRunning
+                            ? TimerOpeningInsta(
+                                secondsRemaining: context.watch<TimerNotifier>().secondsRemaining, cancelTimer: _cancelOpening)
                             : TextButton(onPressed: _startOpening, child: const Text('Open Instagram')),
-                      ))
-                  : Container()
+                      )))
             ])),
         onWillPop: () async {
           if (await _webViewController!.canGoBack()) {

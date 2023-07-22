@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 
 class AppLifecycleObserver extends WidgetsBindingObserver {
-  final Function? onResume;
+  Function _onResume = () {};
   AppLifecycleState _currentState = AppLifecycleState.resumed;
-  AppLifecycleObserver({this.onResume});
+  AppLifecycleObserver();
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _currentState = state;
     if (state == AppLifecycleState.resumed) {
-      onResume!();
-      print('App Resumed');
+      _onResume!();
     }
   }
+
+  set onResume(Function onResume) => _onResume = onResume;
 
   get userOnApp => _currentState == AppLifecycleState.resumed;
 }
