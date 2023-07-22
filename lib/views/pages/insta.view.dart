@@ -1,17 +1,19 @@
 //import 'package:Optigram/helpers/dom_modifier.helper.dart';
 // ignore_for_file: constant_identifier_names
 
-import 'package:optigram/views/widget/timerOpeningInsta.view.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-//import 'package:html/dom.dart' as Dom;
 import 'package:url_launcher/url_launcher.dart';
+//import 'package:html/dom.dart' as Dom;
+
+import 'package:optigram/views/widget/timerOpeningInsta.view.dart';
 import 'package:optigram/services/local_notice.service.dart';
 import 'package:optigram/services/app_lifecycle.service_observer.dart';
 
 const String HOME_URL = 'https://www.instagram.com/';
 const String STARTING_URL = 'https://www.instagram.com/direct/inbox/';
-const int OPENING_INSTA_TIME = 5;
+const int OPENING_INSTA_TIME = 180;
 const int WINDOW_TO_OPEN_INSTA = 60;
 const int NOTIFICATION_ID = 111;
 
@@ -38,6 +40,8 @@ class _InstaPage extends State<InstaPage> {
 
   final LocalNoticeService _localNoticeService = LocalNoticeService();
   late final AppLifecycleObserver _appLifecycleObserver = AppLifecycleObserver(onResume: _onResume);
+
+  Timer _timerWindowToOpen = Timer(Duration.zero, () {});
 
   bool _isOpening = false;
   bool _onHomePage = false;
@@ -87,6 +91,13 @@ class _InstaPage extends State<InstaPage> {
     if (_appLifecycleObserver.userOnApp) {
       _openInstagramApp();
       _localNoticeService.cancelNotification(NOTIFICATION_ID);
+    } else {
+      _timerWindowToOpen = Timer(const Duration(seconds: WINDOW_TO_OPEN_INSTA), () {
+        setState(() {
+          _canOpenInsta = false;
+          _localNoticeService.cancelNotification(NOTIFICATION_ID);
+        });
+      });
     }
   }
 
@@ -167,6 +178,7 @@ class _InstaPage extends State<InstaPage> {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(_appLifecycleObserver);
+    _timerWindowToOpen.cancel();
     super.dispose();
   }
 }

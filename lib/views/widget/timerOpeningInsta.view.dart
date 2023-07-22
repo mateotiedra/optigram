@@ -69,7 +69,7 @@ class _TimerOpeningInstaState extends State<TimerOpeningInsta> {
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text("Instagram opening in ", style: _textStyle),
+          Text("Instagram will open in ", style: _textStyle),
           Text(
             _formatTime(_secondsRemaining),
             style: _textStyle,
