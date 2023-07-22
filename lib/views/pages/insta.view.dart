@@ -15,7 +15,7 @@ import 'package:optigram/services/app_lifecycle.service_observer.dart';
 
 const String HOME_URL = 'https://www.instagram.com/';
 const String STARTING_URL = 'https://www.instagram.com/direct/inbox/';
-const int OPENING_INSTA_TIME = 5;
+const int OPENING_INSTA_TIME = 180;
 const int WINDOW_TO_OPEN_INSTA = 60;
 const int NOTIFICATION_ID = 111;
 
@@ -92,13 +92,12 @@ class _InstaPage extends State<InstaPage> {
 
     if (_appLifecycleObserver.userOnApp && _onHomePage) {
       _openInstagramApp();
-      _localNoticeService.cancelNotification(NOTIFICATION_ID);
     } else {
       _timerWindowToOpen = Timer(const Duration(seconds: WINDOW_TO_OPEN_INSTA), () {
         setState(() {
           _canOpenInsta = false;
-          _localNoticeService.cancelNotification(NOTIFICATION_ID);
         });
+        _localNoticeService.cancelNotification(NOTIFICATION_ID);
       });
     }
   }
@@ -110,6 +109,7 @@ class _InstaPage extends State<InstaPage> {
   }
 
   void _openInstagramApp() async {
+    _localNoticeService.cancelNotification(NOTIFICATION_ID);
     Uri url = Uri.parse(HOME_URL);
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);

@@ -8,6 +8,8 @@ class TimerNotifier extends ChangeNotifier {
 
   void startTimer(int durationInSeconds, {Function? onFinish}) {
     _secondsRemaining = durationInSeconds;
+    notifyListeners();
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_secondsRemaining > 0) {
         _secondsRemaining--;
