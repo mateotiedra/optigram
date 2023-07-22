@@ -8,7 +8,7 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _currentState = state;
     if (state == AppLifecycleState.resumed) {
-      _onResume!();
+      _onResume();
     }
   }
 

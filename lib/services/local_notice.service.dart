@@ -1,6 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tzData;
+import 'package:timezone/data/latest.dart' as tz_data;
 
 class LocalNoticeService {
   final _localNotificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -15,14 +15,16 @@ class LocalNoticeService {
 
     // #3
     await _localNotificationsPlugin.initialize(initSettings).then((_) {
+      // ignore: avoid_print
       print('Notification setup successful');
     }).catchError((Object error) {
+      // ignore: avoid_print
       print('Error: $error');
     });
   }
 
   Future<void> addNotification(String title, String body, int endTime, {channel, id}) async {
-    tzData.initializeTimeZones();
+    tz_data.initializeTimeZones();
     final scheduleTime = tz.TZDateTime.fromMillisecondsSinceEpoch(tz.local, endTime);
 
     final androidDetail = AndroidNotificationDetails(channel, channel);
@@ -47,6 +49,5 @@ class LocalNoticeService {
 
   Future<void> cancelNotification(int id) async {
     await _localNotificationsPlugin.cancel(id);
-    print("cancel");
   }
 }

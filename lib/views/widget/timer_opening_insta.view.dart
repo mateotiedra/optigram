@@ -1,9 +1,7 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 class TimerOpeningInsta extends StatelessWidget {
-  int secondsRemaining;
+  final int secondsRemaining;
   final Function() cancelTimer;
 
   TimerOpeningInsta({super.key, required this.secondsRemaining, required this.cancelTimer});
