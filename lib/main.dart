@@ -5,6 +5,7 @@ import 'package:optigram/services/app_lifecycle.service_observer.dart';
 import 'package:provider/provider.dart';
 
 import 'package:optigram/controllers/timer.notifier.dart';
+import 'package:optigram/data/config/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppLifecycleObserver appLifecycleObserver = AppLifecycleObserver();
 
-    return MaterialApp(title: 'Optigram', routes: <String, WidgetBuilder>{
+    return MaterialApp(title: 'Optigram', theme: getAppThemeData(context), routes: <String, WidgetBuilder>{
       '/': (BuildContext context) => InstaPage(appLifecycleObserver),
     });
   }

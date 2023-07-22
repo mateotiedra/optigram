@@ -49,6 +49,7 @@ class _InstaPage extends State<InstaPage> {
 
   bool _onHomePage = false;
   bool _canOpenInsta = false;
+  bool _pageNotAvailable = false;
 
   void _onUrlChange(InAppWebViewController controller, WebUri? url, bool? isReload) {
     setState(() {
@@ -118,6 +119,15 @@ class _InstaPage extends State<InstaPage> {
     _canOpenInsta = false;
   }
 
+  void _onReceivedError(_, __, WebResourceError err) {
+    setState(() {
+      _pageNotAvailable = err.type == WebResourceErrorType.HOST_LOOKUP;
+    });
+  }
+
+  void _refreshPage() {
+    _webViewController?.reload();
+  }
   /* void _onPageLoaded(InAppWebViewController controller, int progress) {
     if (progress != 100 || _url != 'https://www.instagram.com/') return;
 
@@ -147,13 +157,23 @@ class _InstaPage extends State<InstaPage> {
             body: Stack(children: <Widget>[
               Container(
                   margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-                  child: InAppWebView(
-                    key: webViewKey,
-                    initialUrlRequest: URLRequest(url: WebUri(STARTING_URL)),
-                    initialSettings: _settings,
-                    onWebViewCreated: (controller) => _webViewController = controller,
-                    onUpdateVisitedHistory: _onUrlChange,
-                  )),
+                  child: _pageNotAvailable
+                      ? Center(
+                          child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('Instagram is not available'),
+                            TextButton(onPressed: _refreshPage, child: const Text('Refresh'))
+                          ],
+                        ))
+                      : InAppWebView(
+                          key: webViewKey,
+                          initialUrlRequest: URLRequest(url: WebUri(STARTING_URL)),
+                          initialSettings: _settings,
+                          onWebViewCreated: (controller) => _webViewController = controller,
+                          onUpdateVisitedHistory: _onUrlChange,
+                          onReceivedError: _onReceivedError,
+                        )),
               Visibility(
                   visible: _onHomePage,
                   child: Container(
