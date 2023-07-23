@@ -121,12 +121,15 @@ class _InstaPage extends State<InstaPage> {
 
   void _onReceivedError(_, __, WebResourceError err) {
     setState(() {
-      _pageNotAvailable = err.type == WebResourceErrorType.HOST_LOOKUP;
+      _pageNotAvailable = [WebResourceErrorType.HOST_LOOKUP].contains(err.type);
     });
   }
 
   void _refreshPage() {
     _webViewController?.reload();
+    setState(() {
+      _pageNotAvailable = false;
+    });
   }
   /* void _onPageLoaded(InAppWebViewController controller, int progress) {
     if (progress != 100 || _url != 'https://www.instagram.com/') return;
@@ -154,19 +157,16 @@ class _InstaPage extends State<InstaPage> {
     return WillPopScope(
         child: Scaffold(
             backgroundColor: Colors.grey[900],
-            body: Stack(children: <Widget>[
-              Container(
-                  margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-                  child: _pageNotAvailable
-                      ? Center(
-                          child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('Instagram is not available'),
-                            TextButton(onPressed: _refreshPage, child: const Text('Refresh'))
-                          ],
-                        ))
-                      : InAppWebView(
+            body: _pageNotAvailable
+                ? Center(
+                    child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [const Text('Instagram is not available'), TextButton(onPressed: _refreshPage, child: const Text('Refresh'))],
+                  ))
+                : Stack(children: <Widget>[
+                    Container(
+                        margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+                        child: InAppWebView(
                           key: webViewKey,
                           initialUrlRequest: URLRequest(url: WebUri(STARTING_URL)),
                           initialSettings: _settings,
@@ -174,21 +174,21 @@ class _InstaPage extends State<InstaPage> {
                           onUpdateVisitedHistory: _onUrlChange,
                           onReceivedError: _onReceivedError,
                         )),
-              Visibility(
-                  visible: _onHomePage,
-                  child: Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.black,
-                      ),
-                      margin: EdgeInsets.only(
-                          top: MediaQuery.of(context).padding.top + 150, bottom: MediaQuery.of(context).padding.bottom + 50),
-                      child: Center(
-                        child: context.watch<TimerNotifier>().isTimerRunning
-                            ? TimerOpeningInsta(
-                                secondsRemaining: context.watch<TimerNotifier>().secondsRemaining, cancelTimer: _cancelOpening)
-                            : TextButton(onPressed: _startOpening, child: const Text('Open Instagram')),
-                      )))
-            ])),
+                    Visibility(
+                        visible: _onHomePage,
+                        child: Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.black,
+                            ),
+                            margin: EdgeInsets.only(
+                                top: MediaQuery.of(context).padding.top + 150, bottom: MediaQuery.of(context).padding.bottom + 50),
+                            child: Center(
+                              child: context.watch<TimerNotifier>().isTimerRunning
+                                  ? TimerOpeningInsta(
+                                      secondsRemaining: context.watch<TimerNotifier>().secondsRemaining, cancelTimer: _cancelOpening)
+                                  : TextButton(onPressed: _startOpening, child: const Text('Open Instagram')),
+                            )))
+                  ])),
         onWillPop: () async {
           if (await _webViewController!.canGoBack()) {
             _webViewController!.goBack();
