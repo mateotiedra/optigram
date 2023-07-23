@@ -126,10 +126,10 @@ class _InstaPage extends State<InstaPage> {
   }
 
   void _refreshPage() {
-    _webViewController?.reload();
     setState(() {
       _pageNotAvailable = false;
     });
+    _webViewController?.reload();
   }
   /* void _onPageLoaded(InAppWebViewController controller, int progress) {
     if (progress != 100 || _url != 'https://www.instagram.com/') return;
