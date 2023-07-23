@@ -7,6 +7,6 @@ TextStyle? getTextStyle(TextStyle? textStyle) {
 //TODO : apply theme
 getAppThemeData(context) {
   return ThemeData(
-    textTheme: TextTheme(displayMedium: TextStyle(color: Colors.grey[300], fontSize: 14)),
+    textTheme: TextTheme(bodyMedium: TextStyle(color: Colors.grey[300], fontSize: 14)),
   );
 }
