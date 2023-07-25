@@ -5,17 +5,20 @@ import 'package:logger/logger.dart';
 class DOMModifier {
   dom.Document document = dom.Document();
   final InAppWebViewController _controller;
+  String? _html;
 
   DOMModifier(this._controller);
 
   Future<void> init() async {
-    document = dom.Document.html((await _controller.getHtml())!);
-    await Future.delayed(const Duration(seconds: 4));
-    //print("After 4 seconds : ${document.outerHtml.length}");
+    html = await _controller.getHtml() ?? '';
   }
 
+  String get html => _html ?? '';
+
+  set html(String html) => _html = html;
+
   void apply() {
-    _controller.evaluateJavascript(source: 'document.write(${document.outerHtml})');
+    _controller.evaluateJavascript(source: 'document.write($html)');
   }
 
   void logHtml(dom.Element element) {

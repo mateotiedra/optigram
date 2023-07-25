@@ -2,12 +2,16 @@
 // ignore_for_file: constant_identifier_names
 
 import 'dart:async';
+import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:optigram/controllers/timer.notifier.dart';
+import 'package:optigram/data/config/theme.data.dart';
+import 'package:optigram/data/scripts/insta_theme.data.dart';
+import 'package:optigram/helpers/dom_modifier.helper.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-//import 'package:html/dom.dart' as Dom;
+import 'package:html/dom.dart' as dom;
 
 import 'package:optigram/views/widget/timer_opening_insta.view.dart';
 import 'package:optigram/services/local_notice.service.dart';
@@ -131,19 +135,6 @@ class _InstaPage extends State<InstaPage> {
     });
     _webViewController?.reload();
   }
-  /* void _onPageLoaded(InAppWebViewController controller, int progress) {
-    if (progress != 100 || _url != 'https://www.instagram.com/') return;
-
-    DOMModifier page = DOMModifier(controller);
-
-    page.init().then((_) {
-      Dom.Element body = page.document.getElementById('mount_0_0_p0')!;
-      page.logHtml(body);
-      body.attributes.putIfAbsent('style', () => 'width: 50%');
-      //print(body.attributes['style']);
-      page.apply();
-    });
-  } */
 
   @override
   void initState() {
@@ -173,20 +164,18 @@ class _InstaPage extends State<InstaPage> {
                           onWebViewCreated: (controller) => _webViewController = controller,
                           onUpdateVisitedHistory: _onUrlChange,
                           onReceivedError: _onReceivedError,
+                          initialUserScripts: UnmodifiableListView<UserScript>([Scripts.restyle()]),
                         )),
                     Visibility(
                         visible: _onHomePage,
                         child: Container(
-                            decoration: const BoxDecoration(
-                              color: Colors.black,
-                            ),
                             margin: EdgeInsets.only(
                                 top: MediaQuery.of(context).padding.top + 150, bottom: MediaQuery.of(context).padding.bottom + 50),
                             child: Center(
                               child: context.watch<TimerNotifier>().isTimerRunning
                                   ? TimerOpeningInsta(
                                       secondsRemaining: context.watch<TimerNotifier>().secondsRemaining, cancelTimer: _cancelOpening)
-                                  : TextButton(onPressed: _startOpening, child: const Text('Open Instagram')),
+                                  : TextButton(onPressed: _startOpening, child: const Text('Use the App')),
                             )))
                   ])),
         onWillPop: () async {
@@ -205,3 +194,7 @@ class _InstaPage extends State<InstaPage> {
     super.dispose();
   }
 }
+
+/* 
+
+ */
