@@ -8,10 +8,8 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:optigram/controllers/timer.notifier.dart';
 import 'package:optigram/data/config/theme.data.dart';
 import 'package:optigram/data/scripts/insta_theme.data.dart';
-import 'package:optigram/helpers/dom_modifier.helper.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:html/dom.dart' as dom;
 
 import 'package:optigram/views/widget/timer_opening_insta.view.dart';
 import 'package:optigram/services/local_notice.service.dart';
@@ -36,7 +34,6 @@ class _InstaPage extends State<InstaPage> {
   final GlobalKey webViewKey = GlobalKey();
 
   final InAppWebViewSettings _settings = InAppWebViewSettings(
-    useShouldOverrideUrlLoading: true,
     mediaPlaybackRequiresUserGesture: false,
     allowsInlineMediaPlayback: true,
     iframeAllow: "camera; microphone",
@@ -147,7 +144,7 @@ class _InstaPage extends State<InstaPage> {
     WidgetsBinding.instance.addObserver(_appLifecycleObserver);
     return WillPopScope(
         child: Scaffold(
-            backgroundColor: Colors.grey[900],
+            backgroundColor: const Color.fromARGB(255, 27, 16, 75),
             body: _pageNotAvailable
                 ? Center(
                     child: Column(

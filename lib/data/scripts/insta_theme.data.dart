@@ -25,7 +25,8 @@ class Scripts {
           document.querySelectorAll('svg[color*="rgb(0, 149, 246)"').forEach((elem)=>{elem.style.color = "rgb(${ThemeConfig.colorPalette['ig-primary-button']?.red}, ${ThemeConfig.colorPalette['ig-primary-button']?.green}, ${ThemeConfig.colorPalette['ig-primary-button']?.blue})"});
 
           // Remove all posts
-          document.querySelectorAll('article[role*="presentation"]').forEach((elem)=>{elem.style.display = "none"});
+          const postContainer = document.querySelector('div[style*="max-width: 470px;"]');
+          postContainer.style.display='none' 
 
           // Remove the svg loading animation
           const loadingSvg = document.querySelector('svg[aria-label*="Loading..."]');
